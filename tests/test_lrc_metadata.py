@@ -1,4 +1,4 @@
-from lrctoolkit.lrc_metadata import LRCMetadata, TrackMetadata, ModuleMetadata
+from lrctoolkit.lrc_metadata import TrackMetadata, ModuleMetadata
 
 
 def test_track_metadata():

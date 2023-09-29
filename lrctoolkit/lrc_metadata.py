@@ -68,10 +68,6 @@ class LRCMetadata(BaseLRCMetadata, TrackMetadataMixin, ModuleMetadataMixin):
         **ModuleMetadataMixin.LRC_METADATA_MAPPINGS,
     }
 
-    def __init__(self, **kwargs):
-        super(TrackMetadataMixin, self).__init__(**kwargs)
-
-
 
 class TrackMetadata(BaseLRCMetadata, TrackMetadataMixin):
     """A class that represents track metadata."""

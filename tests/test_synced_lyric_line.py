@@ -7,6 +7,7 @@ def test_formatted_lyric_without_timestamp():
     line = SyncedLyricLine(text="Hello")
     assert line.formatted_lyric == "Hello"
 
+
 @pytest.mark.parametrize(
     "line, expected",
     [
