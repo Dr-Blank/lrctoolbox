@@ -233,16 +233,16 @@ class SyncedLyrics(LRCMetadata):
 
         if isinstance(maybe_lyrics, list):
             return cls.load_from_lines(maybe_lyrics)
-        elif isinstance(maybe_lyrics, Path):
+        if isinstance(maybe_lyrics, Path):
             return cls.load_from_file(maybe_lyrics)
-        elif isinstance(maybe_lyrics, str):
+        if isinstance(maybe_lyrics, str):
             if Path(maybe_lyrics).exists():
                 return cls.load_from_file(maybe_lyrics)
             return cls.load_from_lines(maybe_lyrics.splitlines())
-        else:
-            exc = TypeError("maybe_lyrics must be a list, str or Path")
-            logger.exception(exc)
-            raise exc
+
+        exc = TypeError("maybe_lyrics must be a list, str or Path")
+        logger.exception(exc)
+        raise exc
 
     def update_metadata(self, metadata: dict):
         """updates the metadata of the synced lyrics"""
