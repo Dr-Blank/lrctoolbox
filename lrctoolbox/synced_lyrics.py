@@ -153,8 +153,7 @@ class SyncedLyrics(LRCMetadata):
     @classmethod
     def load_from_lines(cls, lines: list[str]) -> SyncedLyrics:
         """
-        Load synced lyrics from a list of lines.
-        Does the parsing of the lines.
+        Load synced lyrics from a list of strings.
         """
 
         logger.debug("Loading synced lyrics from lines")
