@@ -88,7 +88,7 @@ class SyncedLyrics(LRCMetadata):
             return False
 
         return all(
-            (self._lines[i].timestamp <= self._lines[i + 1].timestamp) # type: ignore
+            (self._lines[i].timestamp <= self._lines[i + 1].timestamp)  # type: ignore  # noqa: E501
             for i in range(len(self._lines) - 1)
         )
 
@@ -107,6 +107,48 @@ class SyncedLyrics(LRCMetadata):
     def _is_missing_any_timestamp(self) -> bool:
         """Check if any timestamp is None"""
         return any(line.timestamp is None for line in self._lines)
+
+    @classmethod
+    def parse_str(cls, line: str) -> SyncedLyricLine | dict[str, str]:
+        """Parse a line for lyrics or lrc metadata"""
+        # match the lyricist
+        match = re.search(lyricist_pattern, line)
+        if match:
+            logger.debug("Lyricist found: %s", line.encode("utf-8"))
+            lyricist = match.group(1)
+            return {"lyricist": lyricist.strip()}
+
+        # match the synced lyrics
+        match = re.search(synced_lyrics_pattern, line)
+        if match:
+            timestamp, lyric = match.groups()
+            timestamp_pattern = re.compile(r"(\d+):(\d+).(\d+)")
+            match = re.search(timestamp_pattern, timestamp)
+            if not match:
+                return SyncedLyricLine(lyric.strip())
+
+            ms_ = int(match.group(3))
+            # make sure the ms is 3 digits
+            ms_ = ms_ * 10 ** (3 - len(str(ms_)))
+            timestamp_in_ms = (
+                int(match.group(1)) * 60 * 1000
+                + int(match.group(2)) * 1000
+                + ms_
+            )
+            # logger.debug(synced_lyrics._lines[-1])
+            return SyncedLyricLine(lyric.strip(), timestamp_in_ms)
+
+        # match the metadata
+        match = re.search(metadata_pattern, line)
+        if match:
+            logger.debug("Metadata found: %s", line.encode("utf-8"))
+            key, value = match.groups()
+            key = cls.LRC_METADATA_MAPPINGS.get(key, key)
+            return {key: value.strip()}
+
+        # if the line is not matched by any of the patterns
+        logger.debug("Line not matched: %s", line.encode("utf-8"))
+        return SyncedLyricLine(line.strip())
 
     @classmethod
     def load_from_lines(cls, lines: list[str]) -> SyncedLyrics:
@@ -140,50 +182,11 @@ class SyncedLyrics(LRCMetadata):
         synced_lyrics = cls()
 
         for line in lines:
-            # match the lyricist
-            match = re.search(lyricist_pattern, line)
-            if match:
-                logger.debug("Lyricist found: %s", line.encode("utf-8"))
-                lyricist = match.group(1)
-                if not synced_lyrics.lyricist:
-                    synced_lyrics.lyricist = lyricist.strip()
+            parsed_line = cls.parse_str(line)
+            if isinstance(parsed_line, SyncedLyricLine):
+                synced_lyrics._lines.append(parsed_line)
                 continue
-
-            # match the synced lyrics
-            match = re.search(synced_lyrics_pattern, line)
-            if match:
-                timestamp, lyric = match.groups()
-                timestamp_pattern = re.compile(r"(\d+):(\d+).(\d+)")
-                match = re.search(timestamp_pattern, timestamp)
-                if not match:
-                    synced_lyrics._lines.append(SyncedLyricLine(lyric.strip()))
-                    continue
-                ms_ = int(match.group(3))
-                # make sure the ms is 3 digits
-                ms_ = ms_ * 10 ** (3 - len(str(ms_)))
-                timestamp_in_ms = (
-                    int(match.group(1)) * 60 * 1000
-                    + int(match.group(2)) * 1000
-                    + ms_
-                )
-                synced_lyrics._lines.append(
-                    SyncedLyricLine(lyric.strip(), timestamp_in_ms)
-                )
-                logger.debug(synced_lyrics._lines[-1])
-                continue
-
-            # match the metadata
-            match = re.search(metadata_pattern, line)
-            if match:
-                logger.debug("Metadata found: %s", line.encode("utf-8"))
-                key, value = match.groups()
-                key = cls.LRC_METADATA_MAPPINGS.get(key, key)
-                setattr(synced_lyrics, key, value.strip())
-                continue
-
-            # if the line is not matched by any of the patterns
-            logger.debug("Line not matched: %s", line.encode("utf-8"))
-            synced_lyrics._lines.append(SyncedLyricLine(line.strip()))
+            synced_lyrics.update_metadata(parsed_line)
 
         if synced_lyrics._is_timestamp_all_same:
             # set all timestamp to None
@@ -254,7 +257,7 @@ class SyncedLyrics(LRCMetadata):
         logger.exception(exc)
         raise exc
 
-    def update_metadata(self, metadata: dict):
+    def update_metadata(self, metadata: dict[str, str]) -> SyncedLyrics:
         """updates the metadata of the synced lyrics"""
         for key, value in metadata.items():
             key = self.LRC_METADATA_MAPPINGS.get(key, key)
