@@ -1,11 +1,6 @@
 # Toolkit to work with [LRC Files](https://en.wikipedia.org/wiki/LRC_(file_format)) in Python
 
-## Installation
-
-```bash
-pip install lrctoolbox
-```
-
+[![PyPI version](https://badge.fury.io/py/lrctoolbox.svg)](https://badge.fury.io/py/lrctoolbox) ![Test](https://github.com/Dr-Blank/lrctoolbox/actions/workflows/tests.yaml/badge.svg)
 ## Usage
 
 ```python
