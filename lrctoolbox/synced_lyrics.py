@@ -7,9 +7,9 @@ import re
 from pathlib import Path
 from typing import Any, ClassVar
 
+from lrctoolbox.exceptions import FileTypeError
+from lrctoolbox.lrc_metadata import LRCMetadata
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
-
-from .lrc_metadata import LRCMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -122,7 +122,6 @@ class SyncedLyrics(LRCMetadata):
 
         # check if the lines is empty or not string
         if not lines or not all(isinstance(line, str) for line in lines):
-            # dont raise exc if last line is empty or none
             line_which_is_not_str = next(
                 (line for line in lines if not isinstance(line, str)), None
             )
@@ -150,7 +149,6 @@ class SyncedLyrics(LRCMetadata):
             match = re.search(synced_lyrics_pattern, line)
             if match:
                 timestamp, lyric = match.groups()
-                # synced_lyrics.lyrics.append(f"[{timestamp}]{lyric}")
                 timestamp_pattern = re.compile(r"(\d+):(\d+).(\d+)")
                 match = re.search(timestamp_pattern, timestamp)
                 if not match:
@@ -214,7 +212,11 @@ class SyncedLyrics(LRCMetadata):
                     path = path.with_suffix(ext)
                     break
             else:
-                exc = FileNotFoundError(f"{path} not found")
+                exc = (
+                    FileNotFoundError(f"{path} not found")
+                    if not path.exists()
+                    else FileTypeError(path.suffix, cls.SUPPORTED_FILE_TYPES)
+                )
                 logger.exception(exc)
                 raise exc
 
@@ -228,7 +230,7 @@ class SyncedLyrics(LRCMetadata):
         return cls.load_from_lines(lines)
 
     @classmethod
-    def load(cls, maybe_lyrics: Any):
+    def load(cls, maybe_lyrics: Any): # TODO: fix type
         """Load synced lyrics from a object"""
 
         if isinstance(maybe_lyrics, list):
