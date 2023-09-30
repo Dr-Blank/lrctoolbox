@@ -63,7 +63,9 @@ def test_update_metadata():
     synced_lyrics.update_metadata(
         {"artist": "Artist", "album": "Album", "title": "Title"}
     )
-    synced_lyrics.update_metadata({"artist": "New Artist", "album": "New Album"})
+    synced_lyrics.update_metadata(
+        {"artist": "New Artist", "album": "New Album"}
+    )
     assert synced_lyrics.artist == "New Artist"
     assert synced_lyrics.title == "Title"
     assert synced_lyrics.album == "New Album"

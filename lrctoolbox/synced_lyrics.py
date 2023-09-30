@@ -88,7 +88,7 @@ class SyncedLyrics(LRCMetadata):
             return False
 
         return all(
-            self._lines[i].timestamp <= self._lines[i + 1].timestamp  # type: ignore
+            (self._lines[i].timestamp <= self._lines[i + 1].timestamp)
             for i in range(len(self._lines) - 1)
         )
 
@@ -129,7 +129,8 @@ class SyncedLyrics(LRCMetadata):
                 (line for line in lines if not isinstance(line, str)), None
             )
             exc = TypeError(
-                f"lines must be a list of str, got {type(line_which_is_not_str)}",
+                "lines must be a list of str, got"
+                f" {type(line_which_is_not_str)}",
                 line_which_is_not_str,
             )
             logger.exception(exc)
@@ -161,7 +162,9 @@ class SyncedLyrics(LRCMetadata):
                 # make sure the ms is 3 digits
                 ms_ = ms_ * 10 ** (3 - len(str(ms_)))
                 timestamp_in_ms = (
-                    int(match.group(1)) * 60 * 1000 + int(match.group(2)) * 1000 + ms_
+                    int(match.group(1)) * 60 * 1000
+                    + int(match.group(2)) * 1000
+                    + ms_
                 )
                 synced_lyrics._lines.append(
                     SyncedLyricLine(lyric.strip(), timestamp_in_ms)
