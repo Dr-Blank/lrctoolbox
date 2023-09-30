@@ -3,13 +3,13 @@
 ## Installation
 
 ```bash
-pip install lrctoolkit
+pip install lrctoolbox
 ```
 
 ## Usage
 
 ```python
-from lrctoolkit import SyncedLyrics
+from lrctoolbox import SyncedLyrics
 
 # Load LRC file
 lyrics = SyncedLyrics.load_from_file("example.lrc")

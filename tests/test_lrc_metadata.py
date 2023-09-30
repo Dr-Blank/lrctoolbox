@@ -1,4 +1,4 @@
-from lrctoolkit.lrc_metadata import TrackMetadata, ModuleMetadata
+from lrctoolbox.lrc_metadata import ModuleMetadata, TrackMetadata
 
 
 def test_track_metadata():
@@ -26,12 +26,12 @@ def test_track_metadata():
 
 def test_module_metadata():
     metadata = ModuleMetadata(
-        re_name="lrctoolkit",
+        re_name="lrctoolbox",
         version="1.0.0",
         author="John Doe",
     )
     assert metadata.lrc_formatted_metadata == [
-        "[re:lrctoolkit]",
+        "[re:lrctoolbox]",
         "[ve:1.0.0]",
         "[by:John Doe]",
     ]

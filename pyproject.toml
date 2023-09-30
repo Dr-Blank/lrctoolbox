@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "lrctoolkit"
+name = "lrctoolbox"
 version = "0.1.0"
 description = "toolkit for working with lrc files"
 authors = ["Dr-Blank <64108942+Dr-Blank@users.noreply.github.com>"]

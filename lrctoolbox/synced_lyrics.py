@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from typing import Any, ClassVar
 
-from lrctoolkit.synced_lyric_line import SyncedLyricLine
+from lrctoolbox.synced_lyric_line import SyncedLyricLine
 
 from .lrc_metadata import LRCMetadata
 

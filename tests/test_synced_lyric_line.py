@@ -1,6 +1,5 @@
 import pytest
-
-from lrctoolkit.synced_lyric_line import SyncedLyricLine
+from lrctoolbox.synced_lyric_line import SyncedLyricLine
 
 
 def test_formatted_lyric_without_timestamp():
