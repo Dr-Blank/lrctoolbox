@@ -11,7 +11,7 @@ class BaseLRCMetadata:
 
     @property
     def lrc_formatted_metadata(self) -> list[str]:
-        """returns the module metadata as a list of strings with LRC metadata format"""
+        """Return a list of formatted metadata."""
         formatted_metadata = []
         for key, value in self.LRC_METADATA_MAPPINGS.items():
             if not getattr(self, value):
