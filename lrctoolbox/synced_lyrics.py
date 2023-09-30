@@ -110,7 +110,10 @@ class SyncedLyrics(LRCMetadata):
 
     @classmethod
     def load_from_lines(cls, lines: list[str]) -> SyncedLyrics:
-        """Load synced lyrics from a list of lines. Does the parsing of the lines"""
+        """
+        Load synced lyrics from a list of lines.
+        Does the parsing of the lines.
+        """
 
         logger.debug("Loading synced lyrics from lines")
 
@@ -207,7 +210,9 @@ class SyncedLyrics(LRCMetadata):
             for ext in cls.SUPPORTED_FILE_TYPES:
                 if path.with_suffix(ext).exists():
                     logger.warning(
-                        "%s not found, using %s instead", path, path.with_suffix(ext)
+                        "%s not found, using %s instead",
+                        path,
+                        path.with_suffix(ext),
                     )
                     path = path.with_suffix(ext)
                     break
@@ -230,7 +235,7 @@ class SyncedLyrics(LRCMetadata):
         return cls.load_from_lines(lines)
 
     @classmethod
-    def load(cls, maybe_lyrics: Any): # TODO: fix type
+    def load(cls, maybe_lyrics: Any):  # TODO: fix type
         """Load synced lyrics from a object"""
 
         if isinstance(maybe_lyrics, list):
