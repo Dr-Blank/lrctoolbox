@@ -43,6 +43,7 @@ flake8 = "^6.1.0"
 tox = "^4.11.3"
 wrapt = "^1.15.0"
 dill = "^0.3.7"
+mypy = "^1.5.1"
 
 [build-system]
 requires = ["poetry-core"]
