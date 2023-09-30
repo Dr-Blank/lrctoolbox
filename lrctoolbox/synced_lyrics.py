@@ -88,7 +88,7 @@ class SyncedLyrics(LRCMetadata):
             return False
 
         return all(
-            (self._lines[i].timestamp <= self._lines[i + 1].timestamp)
+            (self._lines[i].timestamp <= self._lines[i + 1].timestamp) # type: ignore
             for i in range(len(self._lines) - 1)
         )
 
@@ -187,8 +187,8 @@ class SyncedLyrics(LRCMetadata):
 
         if synced_lyrics._is_timestamp_all_same:
             # set all timestamp to None
-            for line in synced_lyrics._lines:
-                line.timestamp = None
+            for _line in synced_lyrics._lines:
+                _line.timestamp = None
 
         if (
             not synced_lyrics._is_timestamp_in_ascending_order

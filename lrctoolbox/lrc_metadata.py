@@ -7,7 +7,7 @@ from typing import ClassVar, Optional
 class BaseLRCMetadata:
     """A class that represents base LRC metadata."""
 
-    LRC_METADATA_MAPPINGS: dict[str, str] = {}
+    LRC_METADATA_MAPPINGS: ClassVar[dict[str, str]] = {}
 
     @property
     def lrc_formatted_metadata(self) -> list[str]:
@@ -63,7 +63,7 @@ class ModuleMetadataMixin:
 class LRCMetadata(BaseLRCMetadata, TrackMetadataMixin, ModuleMetadataMixin):
     """A class that represents combined metadata of module and track."""
 
-    LRC_METADATA_MAPPINGS: dict[str, str] = {
+    LRC_METADATA_MAPPINGS = {
         **TrackMetadataMixin.LRC_METADATA_MAPPINGS,
         **ModuleMetadataMixin.LRC_METADATA_MAPPINGS,
     }

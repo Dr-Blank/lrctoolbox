@@ -29,5 +29,5 @@ class SyncedLyricLine:
         timestamp = datetime.utcfromtimestamp(self.timestamp // 1000).replace(
             microsecond=self.timestamp % 1000 * 1000
         )
-        timestamp = "[" + f"{timestamp:%M:%S.%f}"[:-4] + "]"
-        return timestamp
+        timestamp_str = "[" + f"{timestamp:%M:%S.%f}"[:-4] + "]"
+        return timestamp_str
