@@ -72,13 +72,13 @@ def test_lines_setter_getter():
         SyncedLyricLine(text="Baz qux", timestamp=5000),
         SyncedLyricLine(text="Quux quuz", timestamp=10000),
     ]
-    synced_lyrics.lines = lines
+    synced_lyrics.synced_lines = lines
     assert synced_lyrics.lyrics == [
         "[00:00.00]Foo bar",
         "[00:05.00]Baz qux",
         "[00:10.00]Quux quuz",
     ]
-    assert synced_lyrics.lines == lines
+    assert synced_lyrics.synced_lines == lines
 
 
 def test_lyrics_setter_getter():
@@ -95,52 +95,63 @@ def test_lyrics_setter_getter():
     ]
     synced_lyrics.lyrics = lyrics
     assert synced_lyrics.lyrics == lyrics
-    assert synced_lyrics.lines == synced_lines
+    assert synced_lyrics.synced_lines == synced_lines
     synced_lyrics.lyrics = []
     assert not synced_lyrics.lyrics
-    assert not synced_lyrics.lines
+    assert not synced_lyrics.synced_lines
 
     synced_lyrics.lyrics = synced_lines
     assert synced_lyrics.lyrics == lyrics
-    assert synced_lyrics.lines == synced_lines
+    assert synced_lyrics.synced_lines == synced_lines
 
 
 def test_timestamp_properties():
     synced_lyrics = SyncedLyrics()
-    assert synced_lyrics._is_timestamp_in_ascending_order is False
-    assert synced_lyrics._is_timestamp_all_same is False
-    assert synced_lyrics._is_missing_any_timestamp is False
+    assert synced_lyrics.has_timestamps_in_ascending_order is False
+    assert synced_lyrics.has_timestamps_all_equal is False
+    assert synced_lyrics.is_missing_any_timestamp is False
     lyrics = [
         "[00:00.00]Foo bar",
         "[00:05.00]Baz qux",
         "[00:10.00]Quux quuz",
     ]
     synced_lyrics.lyrics = lyrics
-    assert synced_lyrics._is_missing_any_timestamp is False
-    synced_lyrics.lines[0].timestamp = None
-    assert synced_lyrics._is_missing_any_timestamp is True
-    synced_lyrics.lines[0].timestamp = 0
-    assert synced_lyrics._is_timestamp_in_ascending_order is True
-    synced_lyrics.lines[2].timestamp = 2500
-    assert synced_lyrics._is_timestamp_in_ascending_order is False
-    assert synced_lyrics._is_timestamp_all_same is False
-    synced_lyrics.lines[1].timestamp = 0
-    synced_lyrics.lines[2].timestamp = 0
-    assert synced_lyrics._is_timestamp_all_same is True
+    assert synced_lyrics.is_missing_any_timestamp is False
+    synced_lyrics.synced_lines[0].timestamp = None
+    assert synced_lyrics.is_missing_any_timestamp is True
+    synced_lyrics.synced_lines[0].timestamp = 0
+    assert synced_lyrics.has_timestamps_in_ascending_order is True
+    synced_lyrics.synced_lines[2].timestamp = 2500
+    assert synced_lyrics.has_timestamps_in_ascending_order is False
+    assert synced_lyrics.has_timestamps_all_equal is False
+    synced_lyrics.synced_lines[1].timestamp = 0
+    synced_lyrics.synced_lines[2].timestamp = 0
+    assert synced_lyrics.has_timestamps_all_equal is True
 
 
 @pytest.mark.parametrize(
     "line, expected",
     [
-        ("[au: DrB]", "DrB"),
-        ("[00:00.00]Lyricist: DrB ", "DrB"),
+        ("[ar: Artist]", {"artist": "Artist"}),
+        ("[by: DrB]", {"author": "DrB"}),
+        ("[al: Album]", {"album": "Album"}),
+        ("[ti: Title]", {"title": "Title"}),
+        ("[re: LRCMaker]", {"re_name": "LRCMaker"}),
+        ("[ve: 1.0.0]", {"version": "1.0.0"}),
+        (
+            "[uri: spotify:track:foobarbazqux]",
+            {"uri": "spotify:track:foobarbazqux"},
+        ),
+        ("[length: 200000]", {"length": "200000"}),
+        ("[00:00.00]Lyricist: DrB ", {"lyricist": "DrB"}),
+        ("[random: 200000]", {"random": "200000"}),
     ],
 )
-def test_string_parsing_lyricist(line, expected):
+def test_metadata_parsing(line, expected):
     synced_lyrics = SyncedLyrics()
     res = synced_lyrics.parse_str(line)
     assert isinstance(res, dict)
-    assert res.get("lyricist") == expected
+    assert res == expected
 
 
 @pytest.mark.parametrize(
@@ -150,7 +161,7 @@ def test_string_parsing_lyricist(line, expected):
         ("[00:05.00]Baz qux", SyncedLyricLine(text="Baz qux", timestamp=5000)),
         (
             "[14:25.565]Quux quuz",
-            SyncedLyricLine(text="Quux quuz", timestamp=865565),
+            SyncedLyricLine(text="Quux quuz", timestamp=(14 * 60 + 25) * 1000 + 565),
         ),
         ("Quux quuz", SyncedLyricLine(text="Quux quuz")),
     ],

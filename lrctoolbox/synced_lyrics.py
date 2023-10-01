@@ -25,41 +25,44 @@ class SyncedLyrics(LRCMetadata):
 
     def __init__(self):
         super().__init__()
-        self._lines: list[SyncedLyricLine] = []
+        self._synced_lines: list[SyncedLyricLine] = []
+
+    def __str__(self) -> str:
+        return "\n".join(self.lyrics)
 
     @property
-    def lines(self) -> list[SyncedLyricLine]:
+    def synced_lines(self) -> list[SyncedLyricLine]:
         """returns the lines as a list of SyncedLyricLine objects"""
-        return self._lines
+        return self._synced_lines
 
-    @lines.setter
-    def lines(self, lines: list[SyncedLyricLine]):
+    @synced_lines.setter
+    def synced_lines(self, lines: list[SyncedLyricLine]):
         """sets the lines from a list of SyncedLyricLine objects"""
-        self._lines = lines
+        self._synced_lines = lines
 
     @property
     def lyrics(self) -> list[str]:
         """lyrics as a list of strings with timestamp if present"""
 
         if not self.is_synced:
-            return [line.text for line in self._lines]
+            return [line.text for line in self._synced_lines]
 
-        return [line.formatted_lyric for line in self._lines]
+        return [line.formatted_lyric for line in self._synced_lines]
 
     @lyrics.setter
     def lyrics(self, lyrics: list[str] | list[SyncedLyricLine]):
         """sets the lyrics from a list of strings or SyncedLyricLine objects"""
         if not lyrics:
             logger.warning("lyrics is empty")
-            self._lines = []
+            self._synced_lines = []
             return
 
         # only for convenience
         if all(isinstance(line, SyncedLyricLine) for line in lyrics):
-            self._lines = lyrics  # type: ignore
+            self._synced_lines = lyrics  # type: ignore
             return
 
-        self._lines = self.load_from_lines(lyrics).lines  # type: ignore
+        self._synced_lines = self.load_from_lines(lyrics).synced_lines  # type: ignore # noqa: E501
         # all this is done to preserve any metadata that was present
 
     @property
@@ -72,41 +75,42 @@ class SyncedLyrics(LRCMetadata):
 
         """
         return bool(
-            self._lines
-            and self._is_timestamp_in_ascending_order
-            and not self._is_timestamp_all_same
+            self._synced_lines
+            and self.has_timestamps_in_ascending_order
+            and not self.has_timestamps_all_equal
         )
 
     @property
-    def _is_timestamp_in_ascending_order(self) -> bool:
+    def has_timestamps_in_ascending_order(self) -> bool:
         """checks if the timestamp is in ascending order"""
-        if not self._lines:
+        if not self._synced_lines:
             return False
 
         # if any of the timestamp is None return False
-        if any(line.timestamp is None for line in self._lines):
+        if any(line.timestamp is None for line in self._synced_lines):
             return False
 
         return all(
-            (self._lines[i].timestamp <= self._lines[i + 1].timestamp)  # type: ignore  # noqa: E501
-            for i in range(len(self._lines) - 1)
+            (self._synced_lines[i].timestamp <= self._synced_lines[i + 1].timestamp)  # type: ignore  # noqa: E501
+            for i in range(len(self._synced_lines) - 1)
         )
 
     @property
-    def _is_timestamp_all_same(self) -> bool:
+    def has_timestamps_all_equal(self) -> bool:
         """checks if the timestamp is all same"""
-        if not self._lines:
+        if not self._synced_lines:
             return False
 
         return all(
-            self._lines[i].timestamp == self._lines[i + 1].timestamp
-            for i in range(len(self._lines) - 1)
+            self._synced_lines[i].timestamp
+            == self._synced_lines[i + 1].timestamp
+            for i in range(len(self._synced_lines) - 1)
         )
 
     @property
-    def _is_missing_any_timestamp(self) -> bool:
+    def is_missing_any_timestamp(self) -> bool:
         """Check if any timestamp is None"""
-        return any(line.timestamp is None for line in self._lines)
+        return any(line.timestamp is None for line in self._synced_lines)
 
     @classmethod
     def parse_str(cls, line: str) -> SyncedLyricLine | dict[str, str]:
@@ -170,8 +174,10 @@ class SyncedLyrics(LRCMetadata):
                 (line for line in lines if not isinstance(line, str)), None
             )
             exc = TypeError(
-                "lines must be a list of str, got"
-                f" {type(line_which_is_not_str)}",
+                (
+                    "lines must be a list of str, got"
+                    f" {type(line_which_is_not_str)}"
+                ),
                 line_which_is_not_str,
             )
             logger.exception(exc)
@@ -183,20 +189,20 @@ class SyncedLyrics(LRCMetadata):
         for line in lines:
             parsed_line = cls.parse_str(line)
             if isinstance(parsed_line, SyncedLyricLine):
-                synced_lyrics._lines.append(parsed_line)
+                synced_lyrics._synced_lines.append(parsed_line)
                 continue
             synced_lyrics.update_metadata(parsed_line)
 
-        if synced_lyrics._is_timestamp_all_same:
+        if synced_lyrics.has_timestamps_all_equal:
             # set all timestamp to None
-            for _line in synced_lyrics._lines:
+            for _line in synced_lyrics._synced_lines:
                 _line.timestamp = None
 
         if (
-            not synced_lyrics._is_timestamp_in_ascending_order
-            and not synced_lyrics._is_timestamp_all_same
+            not synced_lyrics.has_timestamps_in_ascending_order
+            and not synced_lyrics.has_timestamps_all_equal
         ):
-            synced_lyrics._lines.sort(key=lambda x: x.timestamp or 0)
+            synced_lyrics._synced_lines.sort(key=lambda x: x.timestamp or 0)
         return synced_lyrics
 
     @classmethod
