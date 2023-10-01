@@ -26,3 +26,8 @@ def test_formatted_lyric_without_timestamp():
 )
 def test_formatted_lyric_with_timestamp(line: SyncedLyricLine, expected):
     assert line.formatted_lyric == expected
+
+
+def test_str():
+    line = SyncedLyricLine(text="Hello", timestamp=1000)
+    assert str(line) == "[00:01.00]Hello"
