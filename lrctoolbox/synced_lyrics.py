@@ -307,7 +307,13 @@ class SyncedLyrics(LRCMetadata):
         # update the metadata
         if write_metadata:
             additional_metadata = additional_metadata or ModuleMetadata()
-            copy.update_metadata(additional_metadata.__dict__)
+            copy.update_metadata(
+                {
+                    k: v
+                    for k, v in additional_metadata.__dict__.items()
+                    if v is not None
+                }
+            )
             # make sure re_name and version is not None
             copy.re_name = copy.re_name or ModuleMetadata().re_name
             copy.version = copy.version or ModuleMetadata().version
