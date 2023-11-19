@@ -35,3 +35,9 @@ def test_module_metadata():
         "[ve:1.0.0]",
         "[by:John Doe]",
     ]
+
+
+def test_module_metadata_default_values():
+    metadata = ModuleMetadata()
+    assert isinstance(metadata.re_name, str)
+    assert isinstance(metadata.version, str)

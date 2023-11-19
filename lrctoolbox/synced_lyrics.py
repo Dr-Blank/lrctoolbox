@@ -8,7 +8,11 @@ from pathlib import Path
 from typing import Any, ClassVar
 
 from lrctoolbox.exceptions import FileTypeError
-from lrctoolbox.lrc_metadata import LRCMetadata
+from lrctoolbox.lrc_metadata import (
+    BaseLRCMetadata,
+    LRCMetadata,
+    ModuleMetadata,
+)
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
 
 logger = logging.getLogger(__name__)
@@ -270,3 +274,57 @@ class SyncedLyrics(LRCMetadata):
             setattr(self, key, value)
 
         return self
+
+    def copy(self) -> SyncedLyrics:
+        """returns a copy of the synced lyrics"""
+        return self.load_from_lines(self.lrc_formatted_metadata + self.lyrics)
+
+    def save_to_file(
+        self,
+        path: Path | str,
+        overwrite: bool = False,
+        write_metadata: bool = True,
+        additional_metadata: BaseLRCMetadata | None = None,
+    ):
+        """save the synced lyrics to a file"""
+        path = Path(path)
+        exc: Exception | None = None
+
+        if path.suffix not in self.SUPPORTED_FILE_TYPES:
+            exc = FileTypeError(path.suffix, self.SUPPORTED_FILE_TYPES)
+
+        # make sure the file does not exist
+        if path.exists() and not overwrite:
+            exc = FileExistsError(
+                f"{path} already exists\nSet overwrite=True to overwrite"
+            )
+
+        if exc:
+            logger.exception(exc)
+            raise exc
+
+        copy = self.copy()
+        # update the metadata
+        if write_metadata:
+            additional_metadata = additional_metadata or ModuleMetadata()
+            copy.update_metadata(
+                {
+                    k: v
+                    for k, v in additional_metadata.__dict__.items()
+                    if v is not None
+                }
+            )
+            # make sure re_name and version is not None
+            copy.re_name = copy.re_name or ModuleMetadata().re_name
+            copy.version = copy.version or ModuleMetadata().version
+
+        if not path.parent.exists():
+            path.parent.mkdir(parents=True)
+
+        lines_to_write = (
+            copy.lrc_formatted_metadata + copy.lyrics
+            if write_metadata
+            else copy.lyrics
+        )
+        with open(path, "w", encoding="utf-8") as file:
+            file.write("\n".join(lines_to_write))

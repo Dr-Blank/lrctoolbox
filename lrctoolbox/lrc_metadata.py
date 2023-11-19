@@ -1,6 +1,7 @@
 """A module that contains classes that represent LRC metadata."""
 
 from dataclasses import dataclass
+import importlib.metadata
 from typing import ClassVar, Optional
 
 
@@ -79,3 +80,17 @@ class ModuleMetadata(BaseLRCMetadata, ModuleMetadataMixin):
     """A class that represents module metadata."""
 
     LRC_METADATA_MAPPINGS = ModuleMetadataMixin.LRC_METADATA_MAPPINGS
+
+    def __init__(
+        self,
+        re_name: Optional[str] = None,
+        version: Optional[str] = None,
+        author: Optional[str] = None,
+    ):
+        """Initialize a new instance of ModuleMetadata."""
+        if all(attr is None for attr in (re_name, version)):
+            # Get the name and version of the module.
+            re_name = __name__.split(".", 1)[0]
+            metadata = importlib.metadata.metadata(re_name)
+            version = metadata["Version"]
+        super().__init__(re_name, version, author)
