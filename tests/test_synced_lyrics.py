@@ -10,7 +10,9 @@ from lrctoolbox.synced_lyrics import SyncedLyrics
 
 def test_load_from_lines(only_lyrics, metadata, lines_with_metadata):
     random.shuffle(lines_with_metadata)
-    synced_lyrics = SyncedLyrics.load_from_lines(lines_with_metadata)
+    synced_lyrics = SyncedLyrics.load_from_lines(
+        lines_with_metadata + [""] * 10
+    )
     for key, value in metadata.items():
         assert getattr(synced_lyrics, key) == value
     assert synced_lyrics.lyrics == only_lyrics
