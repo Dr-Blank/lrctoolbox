@@ -9,8 +9,5 @@
   "python.testing.pytestArgs": ["tests"],
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
-  "python.linting.flake8Enabled": true,
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": false,
-  "python.formatting.blackArgs": ["--line-length", "79", "--preview"]
+  "black-formatter.args": ["--line-length", "79", "--preview"],
 }
