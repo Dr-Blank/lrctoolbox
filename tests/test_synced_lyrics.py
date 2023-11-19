@@ -1,85 +1,43 @@
 from pathlib import Path
+import random
 
 import pytest
 
-from lrctoolbox.exceptions import FileTypeError, LRCError
+from lrctoolbox.lrc_metadata import TrackMetadata
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
 from lrctoolbox.synced_lyrics import SyncedLyrics
 
 
-def test_load_from_lines():
-    artist = "Pritam, Arijit Singh"
-    title = "Shayad"
-    album = "Love Aaj Kal"
-    lyricist = "Irshad Kamil"
-    uri = "spotify:track:foobarbazqux"
-    length = "200000"
-    re_name = "LRCMaker"
-    version = "1.0.0"
-    author = "DrB"
-
-    lines = [
-        f"[ar:{artist}]",
-        f"[ti: {title}]",
-        f"[al:{album}]",
-        f"[au:{lyricist}]",
-        f"[by:{author}]",
-        f"[re:{re_name}]",
-        f"[ve:{version}]",
-        f"[uri:{uri}]",
-        f"[length:{length}]",
-        "[00:00.00]Foo bar",
-        "[00:10.00]Quux quuz",
-        "[00:05.00]Baz qux",
-        "",
-        "",
-    ]
-
-    synced_lyrics = SyncedLyrics.load_from_lines(lines)
-    assert synced_lyrics.artist == artist
-    assert synced_lyrics.title == title
-    assert synced_lyrics.album == album
-    assert synced_lyrics.lyricist == lyricist
-    assert synced_lyrics.author == author
-    assert synced_lyrics.re_name == re_name
-    assert synced_lyrics.version == version
-    assert synced_lyrics.uri == uri
-    assert synced_lyrics.length == length
-    assert synced_lyrics.lyrics == [
-        "[00:00.00]Foo bar",
-        "[00:05.00]Baz qux",
-        "[00:10.00]Quux quuz",
-    ]
+def test_load_from_lines(only_lyrics, metadata, lines_with_metadata):
+    random.shuffle(lines_with_metadata)
+    synced_lyrics = SyncedLyrics.load_from_lines(lines_with_metadata)
+    for key, value in metadata.items():
+        assert getattr(synced_lyrics, key) == value
+    assert synced_lyrics.lyrics == only_lyrics
 
 
-def test_update_metadata():
-    synced_lyrics = SyncedLyrics()
-    synced_lyrics.update_metadata(
-        {"artist": "Artist", "album": "Album", "title": "Title"}
-    )
-    synced_lyrics.update_metadata(
+def test_update_metadata(sample_synced_lyrics: SyncedLyrics):
+    sample_synced_lyrics.update_metadata(
         {"artist": "New Artist", "album": "New Album"}
     )
-    assert synced_lyrics.artist == "New Artist"
-    assert synced_lyrics.title == "Title"
-    assert synced_lyrics.album == "New Album"
+    assert sample_synced_lyrics.artist == "New Artist"
+    assert sample_synced_lyrics.album == "New Album"
 
 
-def test_lines_setter_getter():
-    synced_lyrics = SyncedLyrics()
+def test_lines_setter_getter(sample_synced_lyrics: SyncedLyrics):
     lines = [
-        SyncedLyricLine(text="Foo bar", timestamp=0),
-        SyncedLyricLine(text="Baz qux", timestamp=5000),
-        SyncedLyricLine(text="Quux quuz", timestamp=10000),
+        SyncedLyricLine(text="Baz qux", timestamp=0),
+        SyncedLyricLine(text="Quux quuz", timestamp=5000),
+        SyncedLyricLine(text="Foo bar", timestamp=10000),
     ]
-    synced_lyrics.synced_lines = lines
-    assert synced_lyrics.lyrics == [
-        "[00:00.00]Foo bar",
-        "[00:05.00]Baz qux",
-        "[00:10.00]Quux quuz",
+    sample_synced_lyrics.synced_lines = lines
+    assert sample_synced_lyrics.lyrics == [
+        "[00:00.00]Baz qux",
+        "[00:05.00]Quux quuz",
+        "[00:10.00]Foo bar",
     ]
-    assert synced_lyrics.synced_lines == lines
-    assert list(synced_lyrics) == lines
+    assert sample_synced_lyrics.synced_lines == lines
+    assert list(sample_synced_lyrics) == lines
 
 
 def test_lyrics_setter_getter():
@@ -106,7 +64,7 @@ def test_lyrics_setter_getter():
     assert synced_lyrics.synced_lines == synced_lines
 
 
-def test_timestamp_properties():
+def test_timestamp_properties(sample_synced_lyrics):
     synced_lyrics = SyncedLyrics()
     assert synced_lyrics.has_timestamps_in_ascending_order is False
     assert synced_lyrics.has_timestamps_all_equal is False
@@ -162,7 +120,9 @@ def test_metadata_parsing(line, expected):
         ("[00:05.00]Baz qux", SyncedLyricLine(text="Baz qux", timestamp=5000)),
         (
             "[14:25.565]Quux quuz",
-            SyncedLyricLine(text="Quux quuz", timestamp=(14 * 60 + 25) * 1000 + 565),
+            SyncedLyricLine(
+                text="Quux quuz", timestamp=(14 * 60 + 25) * 1000 + 565
+            ),
         ),
         ("Quux quuz", SyncedLyricLine(text="Quux quuz")),
     ],
@@ -172,3 +132,48 @@ def test_string_parsing_lyrics(line, expected):
     res = synced_lyrics.parse_str(line)
     assert isinstance(res, SyncedLyricLine)
     assert res == expected
+
+
+def test_saving_to_file_no_metadata(
+    tmp_path: Path,
+    sample_synced_lyrics: SyncedLyrics,
+    only_lyrics,
+):
+    path = tmp_path / "foo" / "example.lrc"
+    sample_synced_lyrics.save_to_file(
+        path, write_metadata=False, overwrite=True
+    )
+    assert path.exists()
+    with path.open() as f:
+        lines = f.read().splitlines()
+    assert lines == only_lyrics
+    path.unlink()
+
+
+def test_saving_to_file_with_metadata(
+    tmp_path: Path,
+    sample_synced_lyrics: SyncedLyrics,
+    lines_with_metadata,
+    only_lyrics,
+):
+    path = tmp_path / "example.lrc"
+    sample_synced_lyrics.re_name = None
+    sample_synced_lyrics.version = None
+    sample_synced_lyrics.save_to_file(
+        path,
+        write_metadata=True,
+        overwrite=True,
+        additional_metadata=TrackMetadata(
+            language="gu",
+            title="overwritten title",
+        ),
+    )
+    assert path.exists()
+    with path.open() as f:
+        written_lyrics = SyncedLyrics.load_from_lines(f.read().splitlines())
+
+    assert written_lyrics.artist == sample_synced_lyrics.artist
+    assert written_lyrics.language == "gu"
+    assert written_lyrics.title == "overwritten title"
+    assert written_lyrics.re_name is not None
+    assert written_lyrics.version is not None
