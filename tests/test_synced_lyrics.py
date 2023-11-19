@@ -79,6 +79,7 @@ def test_lines_setter_getter():
         "[00:10.00]Quux quuz",
     ]
     assert synced_lyrics.synced_lines == lines
+    assert list(synced_lyrics) == lines
 
 
 def test_lyrics_setter_getter():

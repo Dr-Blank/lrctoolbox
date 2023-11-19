@@ -30,6 +30,9 @@ class SyncedLyrics(LRCMetadata):
     def __str__(self) -> str:
         return "\n".join(self.lyrics)
 
+    def __iter__(self):
+        return iter(self.synced_lines)
+
     @property
     def synced_lines(self) -> list[SyncedLyricLine]:
         """returns the lines as a list of SyncedLyricLine objects"""
@@ -174,10 +177,8 @@ class SyncedLyrics(LRCMetadata):
                 (line for line in lines if not isinstance(line, str)), None
             )
             exc = TypeError(
-                (
-                    "lines must be a list of str, got"
-                    f" {type(line_which_is_not_str)}"
-                ),
+                "lines must be a list of str, got"
+                f" {type(line_which_is_not_str)}",
                 line_which_is_not_str,
             )
             logger.exception(exc)
