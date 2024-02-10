@@ -33,14 +33,14 @@ def test_timestamps_parsing(lines, expected):
     assert list(parse_timestamps(lines)) == expected
 
 
-def test_load_from_lines(only_lyrics, metadata, lines_with_metadata):
-    random.shuffle(lines_with_metadata)
+def test_load_from_lines(only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped):
+    random.shuffle(lines_with_metadata_wrapped)
     synced_lyrics = SyncedLyrics.load_from_lines(
-        lines_with_metadata + [""] * 10
+        lines_with_metadata_wrapped + [""] * 10
     )
     for key, value in metadata.items():
         assert getattr(synced_lyrics, key) == value
-    assert synced_lyrics.lyrics == only_lyrics
+    assert synced_lyrics.lyrics == only_lyrics_unwrapped
 
 
 def test_update_metadata(sample_synced_lyrics: SyncedLyrics):
@@ -171,7 +171,7 @@ def test_string_parsing_lyrics(line, expected):
 def test_saving_to_file_no_metadata(
     tmp_path: Path,
     sample_synced_lyrics: SyncedLyrics,
-    only_lyrics,
+    only_lyrics_unwrapped,
 ):
     path = tmp_path / "foo" / "example.lrc"
     sample_synced_lyrics.save_to_file(
@@ -180,15 +180,13 @@ def test_saving_to_file_no_metadata(
     assert path.exists()
     with path.open() as f:
         lines = f.read().splitlines()
-    assert lines == only_lyrics
+    assert lines == only_lyrics_unwrapped
     path.unlink()
 
 
 def test_saving_to_file_with_metadata(
     tmp_path: Path,
     sample_synced_lyrics: SyncedLyrics,
-    lines_with_metadata,
-    only_lyrics,
 ):
     path = tmp_path / "example.lrc"
     sample_synced_lyrics.re_name = None
