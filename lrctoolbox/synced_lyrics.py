@@ -40,6 +40,27 @@ def parse_timestamps(timestamps: str) -> Iterator[int]:
         yield timestamp_in_ms
 
 
+def collapse_repeating_lines(
+    lines: list[SyncedLyricLine],
+) -> list[SyncedLyricLine]:
+    """Collapse repeating lines into single line"""
+    seen_text: str | None = None
+    collapsed_lines: list[SyncedLyricLine] = []
+    for line in lines[::-1]:
+        if line.text == seen_text:
+            collapsed_lines.append(
+                SyncedLyricLine(
+                    # use the formatted lyric as text
+                    collapsed_lines.pop().formatted_lyric,
+                    timestamp=line.timestamp,
+                )
+            )
+        else:
+            collapsed_lines.append(line)
+            seen_text = line.text
+    return collapsed_lines[::-1]
+
+
 class SyncedLyrics(LRCMetadata):
     """A class that represents synced lyrics."""
 
@@ -302,6 +323,7 @@ class SyncedLyrics(LRCMetadata):
         overwrite: bool = False,
         write_metadata: bool = True,
         additional_metadata: BaseLRCMetadata | None = None,
+        collapse_repeating_lyrics: bool = False,
     ):
         """save the synced lyrics to a file"""
         path = Path(path)
@@ -321,6 +343,9 @@ class SyncedLyrics(LRCMetadata):
             raise exc
 
         copy = self.copy()
+        if collapse_repeating_lyrics and copy.is_synced:
+            copy.synced_lines = collapse_repeating_lines(copy.synced_lines)
+
         # update the metadata
         if write_metadata:
             additional_metadata = additional_metadata or ModuleMetadata()

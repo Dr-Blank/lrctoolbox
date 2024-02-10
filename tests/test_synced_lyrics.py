@@ -5,7 +5,11 @@ import pytest
 
 from lrctoolbox.lrc_metadata import TrackMetadata
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
-from lrctoolbox.synced_lyrics import SyncedLyrics, parse_timestamps
+from lrctoolbox.synced_lyrics import (
+    SyncedLyrics,
+    collapse_repeating_lines,
+    parse_timestamps,
+)
 
 
 @pytest.mark.parametrize(
@@ -31,6 +35,40 @@ from lrctoolbox.synced_lyrics import SyncedLyrics, parse_timestamps
 )
 def test_timestamps_parsing(lines, expected):
     assert list(parse_timestamps(lines)) == expected
+
+
+@pytest.mark.parametrize(
+    "lines, expected",
+    [
+        (
+            [
+                SyncedLyricLine(text="Foo bar", timestamp=0),
+                SyncedLyricLine(text="Foo bar", timestamp=5000),
+                SyncedLyricLine(text="Baz qux", timestamp=10000),
+                SyncedLyricLine(text="Foo bar", timestamp=15000),
+            ],
+            [
+                SyncedLyricLine(text="[00:05.00]Foo bar", timestamp=0),
+                SyncedLyricLine(text="Baz qux", timestamp=10000),
+                SyncedLyricLine(text="Foo bar", timestamp=15000),
+            ],
+        ),
+        (
+            [
+                SyncedLyricLine(text="Foo bar", timestamp=0),
+                SyncedLyricLine(text="Baz qux", timestamp=5000),
+                SyncedLyricLine(text="Quux quuz", timestamp=10000),
+            ],
+            [
+                SyncedLyricLine(text="Foo bar", timestamp=0),
+                SyncedLyricLine(text="Baz qux", timestamp=5000),
+                SyncedLyricLine(text="Quux quuz", timestamp=10000),
+            ],
+        ),
+    ],
+)
+def test_collapse_repeating_lines(lines, expected):
+    assert collapse_repeating_lines(lines) == expected
 
 
 def test_load_from_lines(only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped):
@@ -181,6 +219,22 @@ def test_saving_to_file_no_metadata(
     with path.open() as f:
         lines = f.read().splitlines()
     assert lines == only_lyrics_unwrapped
+    path.unlink()
+
+
+def test_saving_to_file_with_collapsed_lines(
+    tmp_path: Path,
+    sample_synced_lyrics: SyncedLyrics,
+    only_lyrics_wrapped: list[str],
+):
+    path = tmp_path / "example_collapsed.lrc"
+    sample_synced_lyrics.save_to_file(
+        path, write_metadata=False, overwrite=True, collapse_repeating_lyrics=True
+    )
+    assert path.exists()
+    with path.open() as f:
+        lines = f.read().splitlines()
+    assert lines == only_lyrics_wrapped
     path.unlink()
 
 
