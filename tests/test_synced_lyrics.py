@@ -1,21 +1,46 @@
-from pathlib import Path
 import random
+from pathlib import Path
 
 import pytest
 
 from lrctoolbox.lrc_metadata import TrackMetadata
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
-from lrctoolbox.synced_lyrics import SyncedLyrics
+from lrctoolbox.synced_lyrics import SyncedLyrics, parse_timestamps
 
 
-def test_load_from_lines(only_lyrics, metadata, lines_with_metadata):
-    random.shuffle(lines_with_metadata)
+@pytest.mark.parametrize(
+    "lines, expected",
+    [
+        (
+            "[00:00.00]",
+            [
+                0,
+            ],
+        ),
+        ("[00:00.00][00:05.00]", [0, 5000]),
+        (
+            "[00:05.00]",
+            [
+                5000,
+            ],
+        ),
+        ("[14:25.565]", [14 * 60 * 1000 + 25 * 1000 + 565]),
+        ("[00:00.00][00:05.00][00:10.00]", [0, 5000, 10000]),
+        ("", []),
+    ],
+)
+def test_timestamps_parsing(lines, expected):
+    assert list(parse_timestamps(lines)) == expected
+
+
+def test_load_from_lines(only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped):
+    random.shuffle(lines_with_metadata_wrapped)
     synced_lyrics = SyncedLyrics.load_from_lines(
-        lines_with_metadata + [""] * 10
+        lines_with_metadata_wrapped + [""] * 10
     )
     for key, value in metadata.items():
         assert getattr(synced_lyrics, key) == value
-    assert synced_lyrics.lyrics == only_lyrics
+    assert synced_lyrics.lyrics == only_lyrics_unwrapped
 
 
 def test_update_metadata(sample_synced_lyrics: SyncedLyrics):
@@ -118,7 +143,7 @@ def test_metadata_parsing(line, expected):
 @pytest.mark.parametrize(
     "line, expected",
     [
-        ("[00:00.00]Foo bar", SyncedLyricLine(text="Foo bar", timestamp=0)),
+        ("[00:00.00] Foo bar", SyncedLyricLine(text="Foo bar", timestamp=0)),
         ("[00:05.00]Baz qux", SyncedLyricLine(text="Baz qux", timestamp=5000)),
         (
             "[14:25.565]Quux quuz",
@@ -127,19 +152,26 @@ def test_metadata_parsing(line, expected):
             ),
         ),
         ("Quux quuz", SyncedLyricLine(text="Quux quuz")),
+        (
+            "[00:00.00][00:05.00]Foo bar",
+            [
+                SyncedLyricLine(text="Foo bar", timestamp=0),
+                SyncedLyricLine(text="Foo bar", timestamp=5000),
+            ],
+        ),
     ],
 )
 def test_string_parsing_lyrics(line, expected):
     synced_lyrics = SyncedLyrics()
     res = synced_lyrics.parse_str(line)
-    assert isinstance(res, SyncedLyricLine)
+    assert isinstance(res, (SyncedLyricLine, list))
     assert res == expected
 
 
 def test_saving_to_file_no_metadata(
     tmp_path: Path,
     sample_synced_lyrics: SyncedLyrics,
-    only_lyrics,
+    only_lyrics_unwrapped,
 ):
     path = tmp_path / "foo" / "example.lrc"
     sample_synced_lyrics.save_to_file(
@@ -148,15 +180,13 @@ def test_saving_to_file_no_metadata(
     assert path.exists()
     with path.open() as f:
         lines = f.read().splitlines()
-    assert lines == only_lyrics
+    assert lines == only_lyrics_unwrapped
     path.unlink()
 
 
 def test_saving_to_file_with_metadata(
     tmp_path: Path,
     sample_synced_lyrics: SyncedLyrics,
-    lines_with_metadata,
-    only_lyrics,
 ):
     path = tmp_path / "example.lrc"
     sample_synced_lyrics.re_name = None
