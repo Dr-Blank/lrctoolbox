@@ -1,11 +1,36 @@
-from pathlib import Path
 import random
+from pathlib import Path
 
 import pytest
 
 from lrctoolbox.lrc_metadata import TrackMetadata
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
-from lrctoolbox.synced_lyrics import SyncedLyrics
+from lrctoolbox.synced_lyrics import SyncedLyrics, parse_timestamps
+
+
+@pytest.mark.parametrize(
+    "lines, expected",
+    [
+        (
+            "[00:00.00]",
+            [
+                0,
+            ],
+        ),
+        ("[00:00.00][00:05.00]", [0, 5000]),
+        (
+            "[00:05.00]",
+            [
+                5000,
+            ],
+        ),
+        ("[14:25.565]", [14 * 60 * 1000 + 25 * 1000 + 565]),
+        ("[00:00.00][00:05.00][00:10.00]", [0, 5000, 10000]),
+        ("", []),
+    ],
+)
+def test_timestamps_parsing(lines, expected):
+    assert list(parse_timestamps(lines)) == expected
 
 
 def test_load_from_lines(only_lyrics, metadata, lines_with_metadata):
@@ -118,7 +143,7 @@ def test_metadata_parsing(line, expected):
 @pytest.mark.parametrize(
     "line, expected",
     [
-        ("[00:00.00]Foo bar", SyncedLyricLine(text="Foo bar", timestamp=0)),
+        ("[00:00.00] Foo bar", SyncedLyricLine(text="Foo bar", timestamp=0)),
         ("[00:05.00]Baz qux", SyncedLyricLine(text="Baz qux", timestamp=5000)),
         (
             "[14:25.565]Quux quuz",
@@ -127,12 +152,19 @@ def test_metadata_parsing(line, expected):
             ),
         ),
         ("Quux quuz", SyncedLyricLine(text="Quux quuz")),
+        (
+            "[00:00.00][00:05.00]Foo bar",
+            [
+                SyncedLyricLine(text="Foo bar", timestamp=0),
+                SyncedLyricLine(text="Foo bar", timestamp=5000),
+            ],
+        ),
     ],
 )
 def test_string_parsing_lyrics(line, expected):
     synced_lyrics = SyncedLyrics()
     res = synced_lyrics.parse_str(line)
-    assert isinstance(res, SyncedLyricLine)
+    assert isinstance(res, (SyncedLyricLine, list))
     assert res == expected
 
 
