@@ -5,3 +5,4 @@ disable=
   R0902, # too-many-instance-attributes
   W0511, # TODO fixme
   C0301, # line-too-long
+  R0913, # too-many-arguments
