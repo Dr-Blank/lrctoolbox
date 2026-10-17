@@ -6,16 +6,24 @@ from datetime import datetime
 
 @dataclass
 class SyncedLyricLine:
-    """A class that represents a single synced lyric line."""
-
+    """A class that represents a single synced lyric line.
+    Attributes:
+        AddWhiteSpace (bool): whether to add white space between timestamp and text
+        """
     text: str
     timestamp: int | None = None
+    AddWhiteSpace: bool = False
+
     """in milliseconds"""
 
     @property
     def formatted_lyric(self) -> str:
         """returns the formatted lyric with timestamp"""
-        return f"{self._formatted_timestamp}{self.text}"
+        if self.AddWhiteSpace:
+            return f"{self._formatted_timestamp} {self.text}"
+        else:
+            return f"{self._formatted_timestamp}{self.text}"
+
 
     def __str__(self) -> str:
         return self.formatted_lyric

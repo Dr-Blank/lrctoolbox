@@ -22,6 +22,10 @@ def test_formatted_lyric_without_timestamp():
             SyncedLyricLine(text="Hello", timestamp=200111),
             "[03:20.11]Hello",
         ),
+        (
+            SyncedLyricLine(text="Hello", timestamp=200111,AddWhiteSpace=True),
+            "[03:20.11] Hello",
+        ),
     ],
 )
 def test_formatted_lyric_with_timestamp(line: SyncedLyricLine, expected):
