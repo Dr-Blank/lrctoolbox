@@ -101,6 +101,14 @@ def test_lines_setter_getter(sample_synced_lyrics: SyncedLyrics):
         "[00:05.00]Quux quuz",
         "[00:10.00]Foo bar",
     ]
+    sample_synced_lyrics.AddWhiteSpace=True
+    assert sample_synced_lyrics.lyrics == [
+        "[00:00.00] Baz qux",
+        "[00:05.00] Quux quuz",
+        "[00:10.00] Foo bar",
+    ]
+    sample_synced_lyrics.AddWhiteSpace=False
+
     assert sample_synced_lyrics.synced_lines == lines
     assert list(sample_synced_lyrics) == lines
 

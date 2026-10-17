@@ -63,6 +63,7 @@ def collapse_repeating_lines(
 
 class SyncedLyrics(LRCMetadata):
     """A class that represents synced lyrics."""
+    AddWhiteSpace: bool = False
 
     SUPPORTED_FILE_TYPES: ClassVar[list[str]] = [".lrc", ".txt"]
 
@@ -93,7 +94,15 @@ class SyncedLyrics(LRCMetadata):
         if not self.is_synced:
             return [line.text for line in self._synced_lines]
 
-        return [line.formatted_lyric for line in self._synced_lines]
+        if self.AddWhiteSpace:
+            formattedLinesList=[]
+            for line in self._synced_lines:
+                line.AddWhiteSpace=self.AddWhiteSpace
+                formattedLinesList.append(line.formatted_lyric)
+            return formattedLinesList
+        else:
+            return [line.formatted_lyric for line in self._synced_lines]
+
 
     @lyrics.setter
     def lyrics(self, lyrics: list[str] | list[SyncedLyricLine]):
