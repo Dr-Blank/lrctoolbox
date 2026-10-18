@@ -71,6 +71,24 @@ def test_collapse_repeating_lines(lines, expected):
     assert collapse_repeating_lines(lines) == expected
 
 
+def test_collapse_repeating_lines_with_whitespace():
+    lines = [
+        SyncedLyricLine(text="Foo bar", timestamp=0),
+        SyncedLyricLine(text="Foo bar", timestamp=5000),
+        SyncedLyricLine(text="Baz qux", timestamp=10000),
+        SyncedLyricLine(text="", timestamp=15000),
+        SyncedLyricLine(text="", timestamp=20000),
+    ]
+    collapsed = collapse_repeating_lines(lines, add_whitespace=True)
+    assert [line.formatted_lyric for line in collapsed] == [
+        "[00:00.00][00:05.00] Foo bar",
+        "[00:10.00] Baz qux",
+        "[00:15.00][00:20.00]",
+    ]
+    # input lines are not modified
+    assert lines[0].text == "Foo bar"
+
+
 def test_load_from_lines(only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped):
     random.shuffle(lines_with_metadata_wrapped)
     synced_lyrics = SyncedLyrics.load_from_lines(
@@ -103,6 +121,38 @@ def test_lines_setter_getter(sample_synced_lyrics: SyncedLyrics):
     ]
     assert sample_synced_lyrics.synced_lines == lines
     assert list(sample_synced_lyrics) == lines
+
+
+def test_add_whitespace():
+    synced_lyrics = SyncedLyrics()
+    lyrics = [
+        "[00:00.00]Foo bar",
+        "[00:05.00]Baz qux",
+    ]
+    synced_lyrics.lyrics = lyrics
+    lines_before = [
+        SyncedLyricLine(line.text, line.timestamp)
+        for line in synced_lyrics.synced_lines
+    ]
+
+    synced_lyrics.add_whitespace = True
+    assert synced_lyrics.lyrics == [
+        "[00:00.00] Foo bar",
+        "[00:05.00] Baz qux",
+    ]
+    assert synced_lyrics.copy().lyrics == synced_lyrics.lyrics
+    # formatting must not modify the underlying lines
+    assert synced_lyrics.synced_lines == lines_before
+
+    synced_lyrics.add_whitespace = False
+    assert synced_lyrics.lyrics == lyrics
+
+
+def test_add_whitespace_not_synced():
+    synced_lyrics = SyncedLyrics()
+    synced_lyrics.lyrics = ["Foo bar", "Baz qux"]
+    synced_lyrics.add_whitespace = True
+    assert synced_lyrics.lyrics == ["Foo bar", "Baz qux"]
 
 
 def test_lyrics_setter_getter():
@@ -236,6 +286,29 @@ def test_saving_to_file_with_collapsed_lines(
         lines = f.read().splitlines()
     assert lines == only_lyrics_wrapped
     path.unlink()
+
+
+def test_saving_to_file_with_collapsed_lines_and_whitespace(
+    tmp_path: Path,
+    sample_synced_lyrics: SyncedLyrics,
+    only_lyrics_unwrapped: list[str],
+):
+    path = tmp_path / "example_collapsed_whitespace.lrc"
+    sample_synced_lyrics.add_whitespace = True
+    sample_synced_lyrics.save_to_file(
+        path, write_metadata=False, overwrite=True, collapse_repeating_lyrics=True
+    )
+    with path.open() as f:
+        lines = f.read().splitlines()
+    assert lines == [
+        "[00:00.00] Foo bar",
+        "[00:05.00] Baz qux",
+        "[00:10.00][00:15.00] Quux quuz",
+    ]
+    # written file must still parse back to the same lines
+    assert SyncedLyrics.load_from_file(path).lyrics == only_lyrics_unwrapped
+    # saving must not change the original
+    assert sample_synced_lyrics.add_whitespace
 
 
 def test_saving_to_file_with_metadata(
