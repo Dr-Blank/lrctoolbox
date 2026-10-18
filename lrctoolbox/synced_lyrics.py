@@ -29,13 +29,14 @@ def parse_timestamps(timestamps: str) -> Iterator[int]:
     """Parse the timestamps from the string"""
 
     for a_match in re.finditer(timestamp_parsing_pattern, timestamps):
-        ms_ = int(a_match.group(3))
+        ms_ = a_match.group(3)
         # make sure the ms is 3 digits
-        ms_ = ms_ * 10 ** (3 - len(str(ms_)))
+        while len(ms_) < 3:
+            ms_ = ms_ + "0"
         timestamp_in_ms = (
             int(a_match.group(1)) * 60 * 1000
             + int(a_match.group(2)) * 1000
-            + ms_
+            + int(ms_)
         )
         yield timestamp_in_ms
 
