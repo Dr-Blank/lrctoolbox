@@ -271,7 +271,7 @@ class SyncedLyrics(LRCMetadata):
                     path = path.with_suffix(ext)
                     break
             else:
-                exc = (
+                exc: Exception = (
                     FileNotFoundError(f"{path} not found")
                     if not path.exists()
                     else FileTypeError(path.suffix, cls.SUPPORTED_FILE_TYPES)
