@@ -42,8 +42,14 @@ def parse_timestamps(timestamps: str) -> Iterator[int]:
 
 def collapse_repeating_lines(
     lines: list[SyncedLyricLine],
+    *,
+    add_whitespace: bool = False,
 ) -> list[SyncedLyricLine]:
-    """Collapse repeating lines into single line"""
+    """Collapse repeating lines into single line
+
+    With `add_whitespace`, the space is put in the text after the last
+    timestamp, so the collapsed lines must be formatted without it.
+    """
     seen_text: str | None = None
     collapsed_lines: list[SyncedLyricLine] = []
     for line in lines[::-1]:
@@ -56,20 +62,23 @@ def collapse_repeating_lines(
                 )
             )
         else:
-            collapsed_lines.append(line)
             seen_text = line.text
+            if add_whitespace and line.timestamp is not None and line.text:
+                line = SyncedLyricLine(" " + line.text, line.timestamp)
+            collapsed_lines.append(line)
     return collapsed_lines[::-1]
 
 
 class SyncedLyrics(LRCMetadata):
     """A class that represents synced lyrics."""
-    AddWhiteSpace: bool = False
 
     SUPPORTED_FILE_TYPES: ClassVar[list[str]] = [".lrc", ".txt"]
 
     def __init__(self):
         super().__init__()
         self._synced_lines: list[SyncedLyricLine] = []
+        self.add_whitespace: bool = False
+        """add a space between the timestamp and the lyric text"""
 
     def __str__(self) -> str:
         return "\n".join(self.lyrics)
@@ -94,15 +103,10 @@ class SyncedLyrics(LRCMetadata):
         if not self.is_synced:
             return [line.text for line in self._synced_lines]
 
-        if self.AddWhiteSpace:
-            formattedLinesList=[]
-            for line in self._synced_lines:
-                line.AddWhiteSpace=self.AddWhiteSpace
-                formattedLinesList.append(line.formatted_lyric)
-            return formattedLinesList
-        else:
-            return [line.formatted_lyric for line in self._synced_lines]
-
+        return [
+            line.format(add_whitespace=self.add_whitespace)
+            for line in self._synced_lines
+        ]
 
     @lyrics.setter
     def lyrics(self, lyrics: list[str] | list[SyncedLyricLine]):
@@ -324,7 +328,9 @@ class SyncedLyrics(LRCMetadata):
 
     def copy(self) -> SyncedLyrics:
         """returns a copy of the synced lyrics"""
-        return self.load_from_lines(self.lrc_formatted_metadata + self.lyrics)
+        copy = self.load_from_lines(self.lrc_formatted_metadata + self.lyrics)
+        copy.add_whitespace = self.add_whitespace
+        return copy
 
     def save_to_file(
         self,
@@ -353,7 +359,11 @@ class SyncedLyrics(LRCMetadata):
 
         copy = self.copy()
         if collapse_repeating_lyrics and copy.is_synced:
-            copy.synced_lines = collapse_repeating_lines(copy.synced_lines)
+            copy.synced_lines = collapse_repeating_lines(
+                copy.synced_lines, add_whitespace=copy.add_whitespace
+            )
+            # the space is now part of the collapsed text
+            copy.add_whitespace = False
 
         # update the metadata
         if write_metadata:
