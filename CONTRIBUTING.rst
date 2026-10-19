@@ -54,16 +54,30 @@ tag as its own version.
 Releasing
 =========
 
-1. Bump the version in ``pyproject.toml``:
+Use `Conventional Commits <https://www.conventionalcommits.org/>`_ subjects
+(``feat:``, ``fix:``, ``docs:``, ``build:``, ``feat!:`` for breaking
+changes). The release notes are built from them.
+
+1. Bump the version and commit it:
 
    .. code-block:: bash
 
       uv version --bump patch   # or minor / major
+      git commit -am "chore(release): $(uv version --short)"
 
-2. Commit, push, and create a GitHub release with a ``vX.Y.Z`` tag.
-3. Publishing the release runs the ``PyPi Publish`` workflow, which builds
-   with ``uv build`` and uploads to PyPI through trusted publishing. No API
-   token is involved.
+2. Tag and push:
+
+   .. code-block:: bash
+
+      git tag "v$(uv version --short)"
+      git push origin main --tags
+
+3. The tag runs the ``Release`` workflow. It checks the tag matches the
+   version in ``pyproject.toml``, runs the tests, builds with ``uv build``,
+   uploads to PyPI through trusted publishing (no API token), then creates
+   the GitHub release with notes grouped from the commits since the previous
+   tag. To retry a failed run for an existing tag, start the workflow by hand
+   with that tag.
 
 Python version support
 ======================
