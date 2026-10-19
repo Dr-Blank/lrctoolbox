@@ -1,4 +1,5 @@
 import pytest
+
 from lrctoolbox.synced_lyric_line import SyncedLyricLine
 
 

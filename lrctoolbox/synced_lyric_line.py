@@ -1,4 +1,4 @@
-""" Class that represents a single synced lyric line. """
+"""Class that represents a single synced lyric line."""
 
 from dataclasses import dataclass
 from datetime import datetime

@@ -22,7 +22,7 @@ extensions = [
     "sphinx.ext.autodoc",  # to generate the docs from the docstrings
     "sphinx.ext.todo",  # to document the todos
     "sphinx.ext.viewcode",  # to generate the source code
-    "sphinx.ext.autosectionlabel",  # to reference the sections with their titles
+    "sphinx.ext.autosectionlabel",  # to reference sections by title
     "sphinx.ext.napoleon",  # to support the Google and NumPy docstrings
     "nbsphinx",  # to support the Jupyter notebooks
 ]

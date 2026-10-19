@@ -5,7 +5,7 @@ Contributing Guide
 Getting Started
 ===============
 
-To get started with contributing to this project, you'll need to set up your development environment. 
+To get started with contributing to this project, you'll need to set up your development environment.
 
 `uv <https://docs.astral.sh/uv/>`_ is used for dependency management. Install it and then run ``uv sync`` to install all dependencies.
 
@@ -15,7 +15,7 @@ Building Documentation
 
 We use Sphinx for documentation. You can set it up and build the docs as follows:
 
-1. Install Sphinx: 
+1. Install Sphinx:
 
 .. code-block:: bash
 

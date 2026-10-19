@@ -1,5 +1,4 @@
 from lrctoolbox import SyncedLyrics
-from lrctoolbox.synced_lyric_line import SyncedLyricLine
 
 txt_lines = [
     "Foo bar",

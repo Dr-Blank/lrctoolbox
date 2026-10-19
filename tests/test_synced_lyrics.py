@@ -84,7 +84,9 @@ def test_collapse_repeating_lines_with_whitespace():
     assert lines[0].text == "Foo bar"
 
 
-def test_load_from_lines(only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped):
+def test_load_from_lines(
+    only_lyrics_unwrapped, metadata, lines_with_metadata_wrapped
+):
     random.shuffle(lines_with_metadata_wrapped)
     synced_lyrics = SyncedLyrics.load_from_lines(
         lines_with_metadata_wrapped + [""] * 10
@@ -274,7 +276,10 @@ def test_saving_to_file_with_collapsed_lines(
 ):
     path = tmp_path / "example_collapsed.lrc"
     sample_synced_lyrics.save_to_file(
-        path, write_metadata=False, overwrite=True, collapse_repeating_lyrics=True
+        path,
+        write_metadata=False,
+        overwrite=True,
+        collapse_repeating_lyrics=True,
     )
     assert path.exists()
     with path.open() as f:
@@ -291,7 +296,10 @@ def test_saving_to_file_with_collapsed_lines_and_whitespace(
     path = tmp_path / "example_collapsed_whitespace.lrc"
     sample_synced_lyrics.add_whitespace = True
     sample_synced_lyrics.save_to_file(
-        path, write_metadata=False, overwrite=True, collapse_repeating_lyrics=True
+        path,
+        write_metadata=False,
+        overwrite=True,
+        collapse_repeating_lyrics=True,
     )
     with path.open() as f:
         lines = f.read().splitlines()

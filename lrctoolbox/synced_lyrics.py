@@ -4,8 +4,10 @@ from __future__ import annotations
 
 import logging
 import re
+from collections.abc import Iterator
+from itertools import pairwise
 from pathlib import Path
-from typing import Any, ClassVar, Iterator
+from typing import Any, ClassVar
 
 from lrctoolbox.exceptions import FileTypeError
 from lrctoolbox.lrc_metadata import (
@@ -29,10 +31,8 @@ def parse_timestamps(timestamps: str) -> Iterator[int]:
     """Parse the timestamps from the string"""
 
     for a_match in re.finditer(timestamp_parsing_pattern, timestamps):
-        ms_ = a_match.group(3)
         # make sure the ms is 3 digits
-        while len(ms_) < 3:
-            ms_ = ms_ + "0"
+        ms_ = a_match.group(3).ljust(3, "0")
         timestamp_in_ms = (
             int(a_match.group(1)) * 60 * 1000
             + int(a_match.group(2)) * 1000
@@ -65,8 +65,11 @@ def collapse_repeating_lines(
         else:
             seen_text = line.text
             if add_whitespace and line.timestamp is not None and line.text:
-                line = SyncedLyricLine(" " + line.text, line.timestamp)
-            collapsed_lines.append(line)
+                collapsed_lines.append(
+                    SyncedLyricLine(" " + line.text, line.timestamp)
+                )
+            else:
+                collapsed_lines.append(line)
     return collapsed_lines[::-1]
 
 
@@ -122,7 +125,7 @@ class SyncedLyrics(LRCMetadata):
             self._synced_lines = lyrics  # type: ignore
             return
 
-        self._synced_lines = self.load_from_lines(lyrics).synced_lines  # type: ignore # noqa: E501
+        self._synced_lines = self.load_from_lines(lyrics).synced_lines  # type: ignore
         # all this is done to preserve any metadata that was present
 
     @property
@@ -146,13 +149,14 @@ class SyncedLyrics(LRCMetadata):
         if not self._synced_lines:
             return False
 
+        timestamps = [line.timestamp for line in self._synced_lines]
         # if any of the timestamp is None return False
-        if any(line.timestamp is None for line in self._synced_lines):
+        if None in timestamps:
             return False
 
         return all(
-            (self._synced_lines[i].timestamp <= self._synced_lines[i + 1].timestamp)  # type: ignore  # noqa: E501
-            for i in range(len(self._synced_lines) - 1)
+            current <= following  # type: ignore[operator]
+            for current, following in pairwise(timestamps)
         )
 
     @property
@@ -293,7 +297,7 @@ class SyncedLyrics(LRCMetadata):
                 logger.exception(exc)
                 raise exc
 
-        with open(path, "r", encoding="utf-8") as file:
+        with open(path, encoding="utf-8") as file:
             lines = file.readlines()
 
         if not lines:
@@ -322,8 +326,8 @@ class SyncedLyrics(LRCMetadata):
     def update_metadata(self, metadata: dict[str, str]) -> SyncedLyrics:
         """updates the metadata of the synced lyrics"""
         for key, value in metadata.items():
-            key = self.LRC_METADATA_MAPPINGS.get(key, key)
-            setattr(self, key, value)
+            attr = self.LRC_METADATA_MAPPINGS.get(key, key)
+            setattr(self, attr, value)
 
         return self
 

@@ -1,4 +1,4 @@
-""" Exceptions for the lrctoolbox package. """
+"""Exceptions for the lrctoolbox package."""
 
 
 class LRCError(Exception):
