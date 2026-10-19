@@ -25,28 +25,48 @@ LRC Toolbox
   </a>
 </p>
 
+Toolkit to work with [LRC files](https://en.wikipedia.org/wiki/LRC_(file_format)) in Python. Read, modify and write synchronized lyrics, including their metadata tags.
 
-Toolkit to work with [LRC Files](https://en.wikipedia.org/wiki/LRC_(file_format)) in Python
+## Installation
+
+Requires Python 3.11 or newer. No runtime dependencies.
+
+```bash
+pip install lrctoolbox
+# or
+uv add lrctoolbox
+```
 
 ## Usage
 
 ```python
 from lrctoolbox import SyncedLyrics
 
-# Load LRC file
+# load an LRC file
 lyrics = SyncedLyrics.load_from_file("example.lrc")
 
-# check if lyrics are synced
+# check that every line has a timestamp, in ascending order
 assert lyrics.is_synced
 
-# get lyrics as string
+# get lyrics as a list of lines
 print(lyrics.lyrics)
 
-# shift lyrics by 1 second
-for line in lyrics.lines:
+# shift all lyrics by 1 second
+for line in lyrics:
     line.timestamp += 1000
+
+# change metadata and save
+lyrics.artist = "New Artist"
+lyrics.save_to_file("example_new.lrc", overwrite=True)
 ```
+
+More examples and the API reference are in the [documentation](https://lrctoolbox.readthedocs.io/).
 
 ## Development
 
-[uv](https://docs.astral.sh/uv/) is used for dependency management. Install it and then run `uv sync` to install all dependencies.
+```bash
+uv sync
+uv run pre-commit install
+```
+
+See [CONTRIBUTING.rst](CONTRIBUTING.rst) for tests, docs builds and the release process.

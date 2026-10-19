@@ -11,7 +11,7 @@ import importlib.metadata
 _python_project_name = "lrctoolbox"
 version = importlib.metadata.version(_python_project_name)
 project = "LRCToolbox"
-copyright = "2023, Dr-Blank"
+copyright = "2023-%Y, Dr-Blank"
 author = "Dr-Blank"
 release = version
 
@@ -20,19 +20,30 @@ release = version
 
 extensions = [
     "sphinx.ext.autodoc",  # to generate the docs from the docstrings
+    "sphinx.ext.autosectionlabel",  # to reference sections by title
+    "sphinx.ext.intersphinx",  # to link to the Python docs
+    "sphinx.ext.napoleon",  # to support the Google and NumPy docstrings
     "sphinx.ext.todo",  # to document the todos
     "sphinx.ext.viewcode",  # to generate the source code
-    "sphinx.ext.autosectionlabel",  # to reference sections by title
-    "sphinx.ext.napoleon",  # to support the Google and NumPy docstrings
-    "nbsphinx",  # to support the Jupyter notebooks
+    "myst_nb",  # to support Markdown and Jupyter notebooks
 ]
 
-templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
-autosummary_generate = True
+autosectionlabel_prefix_document = True
+autodoc_typehints = "description"
+autodoc_member_order = "bysource"
+intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+
+# notebooks are rendered with their saved outputs, never executed
+nb_execution_mode = "off"
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
-html_static_path = ["_static"]
+html_theme = "furo"
+html_title = f"{project} {release}"
+html_theme_options = {
+    "source_repository": "https://github.com/Dr-Blank/lrctoolbox/",
+    "source_branch": "main",
+    "source_directory": "docs/",
+}

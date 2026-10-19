@@ -131,11 +131,12 @@ class SyncedLyrics(LRCMetadata):
     @property
     def is_synced(self) -> bool:
         """checks if the lyrics is valid and synced
-        Checks Performed:
-           - lyrics is not empty
-           - timestamp is in ascending order
-           - timestamp is not all same
 
+        Checks performed:
+
+        - lyrics is not empty
+        - timestamp is in ascending order
+        - timestamp is not all same
         """
         return bool(
             self._synced_lines

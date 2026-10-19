@@ -1,5 +1,5 @@
-lrctoolbox
-==========
+API reference
+=============
 
 .. toctree::
    :maxdepth: 4

@@ -1,8 +1,7 @@
-📝Examples
-===========
+Examples
+========
 
 This section contains examples of how to use the module.
-
 
 .. toctree::
    :maxdepth: 1
