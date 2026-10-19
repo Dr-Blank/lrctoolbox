@@ -58,19 +58,23 @@ Use `Conventional Commits <https://www.conventionalcommits.org/>`_ subjects
 (``feat:``, ``fix:``, ``docs:``, ``build:``, ``feat!:`` for breaking
 changes). The release notes are built from them.
 
-1. Bump the version and commit it:
+In VS Code, run the ``release: bump version`` task (it asks for patch, minor
+or major), then ``release: push``. By hand:
+
+1. Bump the version, commit it and tag it:
 
    .. code-block:: bash
 
       uv version --bump patch   # or minor / major
-      git commit -am "chore(release): $(uv version --short)"
+      version=$(uv version --short)
+      git commit -m "chore(release): $version" pyproject.toml uv.lock
+      git tag -a "v$version" -m "v$version"
 
-2. Tag and push:
+2. Push the branch together with the tag:
 
    .. code-block:: bash
 
-      git tag "v$(uv version --short)"
-      git push origin main --tags
+      git push --follow-tags
 
 3. The tag runs the ``Release`` workflow. It checks the tag matches the
    version in ``pyproject.toml``, runs the tests, builds with ``uv build``,

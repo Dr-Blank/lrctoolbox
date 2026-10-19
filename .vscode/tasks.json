@@ -53,6 +53,29 @@
               "kind": "build",
               "isDefault": false
           }
+      },
+      {
+          "label": "release: bump version",
+          "detail": "Bump the version, commit it and create the annotated vX.Y.Z tag",
+          "type": "shell",
+          "command": "uv version --bump ${input:bump} && version=$(uv version --short) && git commit -m \"chore(release): $version\" pyproject.toml uv.lock && git tag -a \"v$version\" -m \"v$version\"",
+          "problemMatcher": []
+      },
+      {
+          "label": "release: push",
+          "detail": "Push the branch with its release tag; the tag starts the Release workflow",
+          "type": "shell",
+          "command": "git push --follow-tags",
+          "problemMatcher": []
+      }
+  ],
+  "inputs": [
+      {
+          "id": "bump",
+          "type": "pickString",
+          "description": "Version part to bump",
+          "options": ["patch", "minor", "major"],
+          "default": "patch"
       }
   ]
 }
