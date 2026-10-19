@@ -46,10 +46,10 @@ Repository = "https://github.com/Dr-Blank/lrctoolbox"
 
 [dependency-groups]
 dev = [
-  "pytest>=7.4.2,<8",
-  "pre-commit>=3.4.0,<4",
-  "pytest-cov>=4.1.0,<5",
-  "mypy>=1.5.1,<2",
+  "pytest>=9.1.1,<10",
+  "pre-commit>=4.7.0,<5",
+  "pytest-cov>=7.1.0,<8",
+  "mypy>=2.4.0,<3",
   "ruff>=0.17.1,<0.18",
 ]
 docs = [
@@ -83,6 +83,10 @@ select = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["PLR2004"] # magic values are fine in assertions
+
+[tool.pytest]
+testpaths = ["tests"]
+addopts = ["--import-mode=importlib"]
 
 [tool.mypy]
 packages = ["lrctoolbox"]
