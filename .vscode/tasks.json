@@ -4,7 +4,7 @@
       {
           "label": "pre-commit",
           "type": "shell",
-          "command": "poetry run pre-commit",
+          "command": "uv run pre-commit",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -13,7 +13,7 @@
       {
           "label": "pytest",
           "type": "shell",
-          "command": "poetry run pytest --cov --cov-report=html:coverage_report",
+          "command": "uv run pytest --cov --cov-report=html:coverage_report",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -22,7 +22,7 @@
       {
           "label": "mypy",
           "type": "shell",
-          "command": "poetry run mypy lrctoolbox/",
+          "command": "uv run mypy lrctoolbox/",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -31,7 +31,7 @@
       {
           "label": "pylint",
           "type": "shell",
-          "command": "poetry run pylint lrctoolbox/",
+          "command": "uv run pylint lrctoolbox/",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -40,7 +40,7 @@
       {
           "label": "flake8",
           "type": "shell",
-          "command": "poetry run flake8 lrctoolbox/",
+          "command": "uv run flake8 lrctoolbox/",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -57,7 +57,7 @@
       {
           "label": "black",
           "type": "shell",
-          "command": "poetry run black lrctoolbox/",
+          "command": "uv run black lrctoolbox/",
           "group": {
               "kind": "build",
               "isDefault": false

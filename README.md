@@ -50,6 +50,6 @@ for line in lyrics.lines:
 
 ## Development
 
-poetry is used for dependency management. Install it with `pip install poetry` and then run `poetry install` to install all dependencies.
+[uv](https://docs.astral.sh/uv/) is used for dependency management. Install it and then run `uv sync` to install all dependencies.
 
 
