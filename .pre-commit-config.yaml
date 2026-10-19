@@ -1,36 +1,29 @@
 repos:
-  - repo: local
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
     hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        args: [lrctoolbox]
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
 
-  - repo: local
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.13.1
     hooks:
-      - id: black
-        name: black
-        entry: black
-        language: system
-        types: [python]
-        args: [--line-length=79, --preview]
+      - id: uv-lock
 
-  - repo: local
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.1
     hooks:
-      - id: flake8
-        name: flake8
-        entry: flake8
-        language: system
-        types: [python]
-        args: [--max-line-length=79]
+      - id: ruff-check
+        args: [--fix]
+      - id: ruff-format
 
   - repo: local
     hooks:
       - id: mypy
         name: mypy
-        entry: mypy
+        entry: uv run mypy
         language: system
         types: [python]
-        args: [--ignore-missing-imports, --strict-optional, --warn-redundant-casts, --warn-unused-ignores, --warn-return-any, --warn-unreachable, --warn-unused-configs, --pretty]
+        pass_filenames: false

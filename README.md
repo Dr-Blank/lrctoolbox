@@ -11,14 +11,14 @@ LRC Toolbox
   <a href="https://github.com/Dr-Blank/lrctoolbox/actions">
     <img src="https://github.com/Dr-Blank/lrctoolbox/actions/workflows/tests.yaml/badge.svg" alt="Test">
   </a>
-  <a href="https://codecov.io/gh/Dr-Blank/lrctoolbox" > 
-    <img src="https://codecov.io/gh/Dr-Blank/lrctoolbox/graph/badge.svg"/> 
+  <a href="https://codecov.io/gh/Dr-Blank/lrctoolbox" >
+    <img src="https://codecov.io/gh/Dr-Blank/lrctoolbox/graph/badge.svg"/>
   </a>
   <a href='https://lrctoolbox.readthedocs.io/en/latest/?badge=latest'>
     <img src='https://readthedocs.org/projects/lrctoolbox/badge/?version=latest' alt='Documentation Status' />
   </a>
-  <a href="https://github.com/psf/black">
-    <img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black">
+  <a href="https://github.com/astral-sh/ruff">
+    <img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff">
   </a>
   <a href="https://mypy-lang.org/">
     <img src="https://www.mypy-lang.org/static/mypy_badge.svg" alt="Checked with mypy">
@@ -45,11 +45,8 @@ print(lyrics.lyrics)
 # shift lyrics by 1 second
 for line in lyrics.lines:
     line.timestamp += 1000
-
 ```
 
 ## Development
 
 [uv](https://docs.astral.sh/uv/) is used for dependency management. Install it and then run `uv sync` to install all dependencies.
-
-

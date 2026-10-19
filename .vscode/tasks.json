@@ -4,7 +4,7 @@
       {
           "label": "pre-commit",
           "type": "shell",
-          "command": "uv run pre-commit",
+          "command": "uv run pre-commit run --all-files",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -22,25 +22,16 @@
       {
           "label": "mypy",
           "type": "shell",
-          "command": "uv run mypy lrctoolbox/",
+          "command": "uv run mypy",
           "group": {
               "kind": "test",
               "isDefault": false
           }
       },
       {
-          "label": "pylint",
+          "label": "ruff",
           "type": "shell",
-          "command": "uv run pylint lrctoolbox/",
-          "group": {
-              "kind": "test",
-              "isDefault": false
-          }
-      },
-      {
-          "label": "flake8",
-          "type": "shell",
-          "command": "uv run flake8 lrctoolbox/",
+          "command": "uv run ruff check .",
           "group": {
               "kind": "test",
               "isDefault": false
@@ -48,16 +39,16 @@
       },
       {
           "label": "tests",
-          "dependsOn": ["pytest", "mypy", "pylint", "flake8"],
+          "dependsOn": ["pytest", "mypy", "ruff"],
           "group": {
               "kind": "test",
               "isDefault": true
           }
       },
       {
-          "label": "black",
+          "label": "format",
           "type": "shell",
-          "command": "uv run black lrctoolbox/",
+          "command": "uv run ruff format .",
           "group": {
               "kind": "build",
               "isDefault": false

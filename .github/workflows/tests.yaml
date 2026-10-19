@@ -34,12 +34,12 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.11"
-      - name: pylint
-        run: uv run --locked pylint lrctoolbox/
+      - name: ruff check
+        run: uv run --locked ruff check --output-format=github .
+      - name: ruff format
+        run: uv run --locked ruff format --check .
       - name: mypy
-        run: uv run --locked mypy lrctoolbox/
-      - name: flake8
-        run: uv run --locked flake8 lrctoolbox/
+        run: uv run --locked mypy
 
   coverage:
     name: Coverage report
